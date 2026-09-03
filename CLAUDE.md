@@ -1,77 +1,62 @@
 # CLAUDE.md
 
-This file gives any AI coding agent (Claude, or otherwise) full context on this
-project by reading this single file. Keep it up to date as the project grows —
-when you add features, change structure, or make decisions, update the
-relevant section below in the same commit.
+This file is the entry point for any AI agent (Claude, Claude Code, or
+otherwise) picking up work on this repository.
 
-## Project Overview
+## Read these first, in this order
 
-- **Name:** NGX
-- **Description:** NextAPP (placeholder description from README — update once
-  the project's actual purpose is defined)
-- **Status:** Early stage / scaffolding. No build system, framework, or
-  backend has been set up yet.
+1. `docs/PROJECT_STATE.md` — current phase, what's done, exact next task
+2. `docs/HANDOFF.md` — compact continuation prompt for a new session
+3. `docs/ARCHITECTURE.md` — stable architecture reference
+4. `docs/DECISIONS.md` — why key technical choices were made
 
-## Current State
+**Do not restart the project or redesign completed work.** If code/
+migrations and documentation disagree, code wins — fix the docs, don't
+rewrite the code to match stale docs.
 
-This repository currently contains:
+## What this project is
 
-- `README.md` — minimal project name/description, not yet expanded.
-- `login.html` — a standalone, static login page (HTML/CSS/JS in one file,
-  no external dependencies). It has:
-  - Username/email + password fields with basic client-side validation
-  - "Remember me" checkbox and "Forgot password?" / "Sign up" placeholder links
-  - A `submit` event handler that currently only shows a demo `alert()` —
-    it is **not** wired up to any real authentication backend yet. Look for
-    the `TODO` comment inside the `<script>` tag in `login.html` for where to
-    add the real API call.
-- `CLAUDE.md` — this file.
+NGX is an enterprise multi-company, multi-branch POS (Point of Sale) and
+ERP system: sales, inventory, purchasing, accounting, customers/suppliers,
+and reporting, designed to be reusable across different business types
+(retail, wholesale, pharmacy, electronics, etc.) rather than built for one
+specific business.
 
-There is no backend, database, routing, build tooling, package manifest, or
-test suite in the repo yet.
+Full original requirements: `docs/Enterprise_Multi-Company_Multi-Branch_POS_and_ERP_Architecture.pdf`
+Multi-session development process: `docs/Claude_POS_Phase_Handoff_Playbook.docx`
 
-## Tech Stack
+## Tech stack
 
-- Currently: plain HTML/CSS/vanilla JS only.
-- No framework, package manager, or backend has been chosen yet. If you add
-  one (React, Next.js, Express, etc.), update this section with:
-  - Language/runtime version
-  - Framework(s) used
-  - How to install dependencies
-  - How to run locally
-  - How to build/deploy
+Next.js 14 (App Router) + TypeScript + Tailwind CSS, Prisma + PostgreSQL,
+custom session-based auth. Full reasoning in `docs/ARCHITECTURE.md` and
+`docs/DECISIONS.md`.
 
-## How to Run
-
-There is no build step. Open `login.html` directly in a browser, or serve the
-directory with any static file server, e.g.:
+## How to run locally
 
 ```bash
-python3 -m http.server 8000
-# then visit http://localhost:8000/login.html
+cp .env.example .env          # fill in real values
+docker compose up -d          # starts local Postgres
+npm install
+npx prisma generate
+npm run dev                   # http://localhost:3000
 ```
 
-## Conventions / Decisions
+## Development process for this repo
 
-_(None established yet. As decisions are made — folder structure, naming,
-styling approach, auth strategy, API design, etc. — record them here so future
-agents don't have to reverse-engineer them from code.)_
+This project follows a strict phase-by-phase handoff process (see
+`docs/Claude_POS_Phase_Handoff_Playbook.docx` for the full rationale):
 
-## Known Gaps / Next Steps
+- Work proceeds one phase at a time per `docs/CURRENT_PHASE.md`.
+- Every session updates `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, and
+  `docs/TEST_STATUS.md` before ending.
+- `docs/HANDOFF.md` always contains a ready-to-paste continuation prompt
+  for the next session/account.
+- Critical invariants (double-entry accounting, server-side authorization,
+  atomic transactions, immutable posted records) are non-negotiable — see
+  `docs/ARCHITECTURE.md`.
 
-- Define what "NGX / NextAPP" actually is (target users, core features).
-- Decide on and set up a backend/auth provider; connect `login.html`'s form
-  submit to a real endpoint.
-- Add a package manifest and build tooling if the project grows beyond static
-  pages.
-- Add tests once there's logic worth testing.
+## Legacy content
 
-## Instructions for AI Agents Working on This Repo
-
-1. Read this file first before making changes.
-2. After any meaningful change (new feature, new file, new dependency,
-   architectural decision), update the relevant section above so this file
-   stays an accurate single source of truth.
-3. Don't assume unstated requirements — if project intent is unclear, note
-   the open question here instead of guessing silently.
+`docs/legacy/` contains a standalone `login.html` and a stray
+`package-lock.json` created before this project's real scope was defined.
+They're archived for reference only and are not part of the active app.

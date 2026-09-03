@@ -1,0 +1,22 @@
+// NGX POS/ERP — Prisma schema
+//
+// Phase 0 (current): datasource + generator only. No business models yet.
+// Models are introduced phase-by-phase per docs/CURRENT_PHASE.md:
+//   Phase 1 — users, roles, permissions, sessions
+//   Phase 2 — companies, branches, warehouses, user-branch scoping
+//   Phase 3 — items, categories, brands, units, customers, suppliers, tax
+//   Phase 4 — inventory_transactions, stock_balances, transfers, batches
+//   ... (see docs/DB_SCHEMA.md for the live, up-to-date table list)
+//
+// Kept intentionally ANSI-SQL-portable where practical (per
+// docs/ARCHITECTURE.md) so a future migration to SQL Server/Oracle does not
+// require redesigning the domain model.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

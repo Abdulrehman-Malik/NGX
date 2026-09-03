@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ngx_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ngx_user
+      POSTGRES_PASSWORD: ngx_password
+      POSTGRES_DB: ngx_pos_erp
+    ports:
+      - "5432:5432"
+    volumes:
+      - ngx_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  ngx_postgres_data:
