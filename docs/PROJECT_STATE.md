@@ -1,100 +1,122 @@
 # PROJECT STATE
 
-Last updated: 2026-09-03 07:00
-Current phase: Phase 0 — Foundation & Architecture
-Overall status: IN PROGRESS (near complete)
+Last updated: 2026-09-03 11:15
+Current phase: Phase 1 — Authentication & Security
+Overall status: IN PROGRESS (code complete, unverified against a real DB)
 
 ## Completed
 
-- Read and internalized both source specs (moved into `docs/` for
-  reference): the master requirements PDF and the phase handoff playbook.
-- Presented architecture proposal (tech stack, module boundaries, DB
-  strategy, multi-company/branch isolation model, accounting/inventory
-  engine design, folder structure, roadmap, risks) and got sign-off on the
-  open decisions (Next.js API routes, generic retail/wholesale demo,
-  local/Docker deployment target).
-- Set up full `docs/` handoff system described in the Playbook.
-- Archived pre-existing repo content (`login.html`, stray
-  `package-lock.json`) to `docs/legacy/` — superseded by the real app.
-- Scaffolded Next.js 14 (App Router) + TypeScript + Tailwind project.
-- Added Prisma with PostgreSQL datasource (no models yet).
-- Added `docker-compose.yml` for local Postgres.
-- Added `.env.example`.
-- Added Vitest test runner + one smoke test.
-- Verified toolchain: `npm install`, `tsc --noEmit`, `next lint`, `vitest
-  run` all pass. `next build` and `prisma generate` cannot fully complete
-  in the current build sandbox because it can't reach Prisma's binary CDN
-  (`binaries.prisma.sh`) — expected to work normally on a machine with full
-  internet access. See `docs/TEST_STATUS.md` for exact detail.
+**Phase 0** (fully done — see `docs/CHANGELOG.md` for detail): docs/
+handoff system, Next.js + TypeScript + Tailwind scaffold, Prisma datasource,
+Docker Compose, toolchain verified except `prisma generate`/`next build`
+(blocked only by this build sandbox's network allowlist).
+
+**Phase 1 (this session):**
+- Prisma auth models: `User`, `Role`, `Permission`, `RolePermission`,
+  `UserRole`, `Session`. ID strategy: `cuid()`.
+- `src/modules/auth/`: `password.ts`, `session-token.ts`,
+  `lockout-policy.ts`, `permissions.ts`, `schemas.ts`, `auth-service.ts`
+  (login/logout/resolveSession).
+- API routes: `POST /api/auth/login`, `POST /api/auth/logout`,
+  `GET /api/auth/me`.
+- `src/lib/session-cookie.ts`, `src/lib/current-user.ts` — session
+  resolution for server components/route handlers.
+- Login UI (`src/app/login/page.tsx`) + design-system primitives
+  (`Button`, `Input`, `Label`/`FormField`).
+- Home page updated to show signed-in state + logout button.
+- `prisma/seed.ts` — creates one super-admin role + admin user.
+- 15 passing unit tests (password hashing, lockout policy, permission
+  checks) — all pure-function tests, no DB required.
+- Added `docs/GIT_WORKFLOW.md` — one branch per module, going forward.
 
 ## Currently working on
 
-- Nothing in progress — Phase 0 verification is the last remaining item.
+Nothing in progress. Phase 1 code is written and self-consistent
+(typecheck + lint + unit tests pass), but **has never touched a real
+database** — this environment has no Docker/Postgres and can't reach
+Prisma's binary CDN (see `docs/TEST_STATUS.md`). This is the single most
+important thing to verify next.
 
 ## Exact next task
 
-- Run `npm install && npx prisma generate && npm run build` on a machine
-  with normal internet access to confirm the one sandbox-only failure
-  resolves, then mark Phase 0 fully DONE in this file.
-- After that: begin Phase 1 — Authentication & Security (users, roles,
-  permissions foundation, login screen, session management).
+On a machine with normal internet + Docker access:
+1. `docker compose up -d`
+2. `cp .env.example .env` (fill in real `DATABASE_URL`/`SESSION_SECRET`)
+3. `npm install && npx prisma generate`
+4. `npx prisma migrate dev --name init_auth`
+5. `npm run db:seed`
+6. `npx tsc --noEmit` again (the earlier pass was against an ungenerated
+   Prisma client stub — treat this second run as the real signal)
+7. `npm run dev`, manually test: visit `/login`, sign in with the seeded
+   admin credentials (printed by the seed script), confirm redirect to `/`
+   shows "Signed in as System Administrator", click Log out, confirm
+   redirect back to `/login`.
+8. If all of the above passes, mark Phase 1 DONE in this file and
+   `docs/CURRENT_PHASE.md`, then start Phase 2 (Company/Branch/Warehouse).
 
 ## Last completed task
 
-- Toolchain verification (typecheck/lint/tests passing; build blocked only
-  by sandbox network restriction on Prisma binaries).
+Wrote and self-verified (typecheck/lint/unit-tests) the full Phase 1 auth
+code path: models, services, API routes, session handling, login UI,
+seed script.
 
 ## Known blockers
 
-- None that block real development. The Prisma binary fetch failure is a
-  property of this specific sandboxed tool environment, not the project —
-  confirm it's a non-issue once running locally.
+- No live database available to test against in the environment this was
+  built in (no Docker, and Prisma's binary CDN isn't reachable from this
+  sandbox). Not a project defect — see `docs/TEST_STATUS.md`. Must be
+  resolved by running the "Exact next task" steps above on a normal
+  machine before Phase 1 can be considered done.
 
 ## Important recent decisions
 
-- See `docs/DECISIONS.md` (Next.js API routes over separate backend,
-  Prisma, custom session auth over NextAuth, local/Docker deployment,
-  generic seed data, legacy files archived not deleted).
+See `docs/DECISIONS.md`: `cuid()` ID strategy, super-admin permission
+bypass (temporary, revisit once the permission catalog is built out), and
+the new one-branch-per-module git workflow (`docs/GIT_WORKFLOW.md`).
 
 ## Verification
 
-- Build: FAIL (sandbox-only — Prisma engine binary blocked by network
-  allowlist; not a code issue)
-- Typecheck: PASS
+- Typecheck: PASS, but **weak signal** — Prisma client types are
+  ungenerated (see caveat in `docs/TEST_STATUS.md`); must re-run after
+  `prisma generate` succeeds.
 - Lint: PASS
-- Tests: PASS (1/1 smoke test)
-- DB migrations: NOT YET APPLICABLE (no models yet; DB itself not started
-  in this sandbox — no Docker available here either)
+- Unit tests: PASS (15/15 — password, lockout, permissions, smoke)
+- Integration/E2E of the actual login flow: NOT RUN (no DB available)
+- `npm audit`: 10 findings (1 critical, 6 high, 3 moderate), still
+  untriaged — carried over from Phase 0, see `docs/TODO.md`
 
 ## Files changed in last session
 
-- `package.json`, `tsconfig.json`, `next.config.js`, `tailwind.config.ts`,
-  `postcss.config.js`, `.eslintrc.json`, `.gitignore`, `.env.example`,
-  `docker-compose.yml`, `vitest.config.ts`
-- `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/globals.css`,
-  `src/app/api/health/route.ts`, `src/lib/db.ts`
-- `prisma/schema.prisma`
-- `tests/unit/smoke.test.ts`
-- `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/DB_SCHEMA.md`,
-  `docs/API_STATUS.md`, `docs/UI_STATUS.md`, `docs/PROJECT_STATE.md`,
-  `docs/CURRENT_PHASE.md`, `docs/CHANGELOG.md`, `docs/TEST_STATUS.md`,
-  `docs/TODO.md`, `docs/HANDOFF.md`
-- Moved: `login.html` → `docs/legacy/login.html`,
-  `package-lock.json` → `docs/legacy/old-package-lock.json`,
-  both spec source documents → `docs/`
+- `prisma/schema.prisma` (auth models added), `prisma/seed.ts`
+- `src/modules/auth/{password,session-token,lockout-policy,permissions,schemas,auth-service}.ts`
+- `src/lib/{session-cookie,current-user}.ts`
+- `src/app/api/auth/{login,logout,me}/route.ts`
+- `src/app/login/page.tsx`, `src/app/page.tsx` (rewritten),
+  `src/components/logout-button.tsx`
+- `src/components/ui/{button,input,form-field}.tsx`
+- `tests/unit/{password,lockout-policy,permissions}.test.ts`
+- `package.json` (added `prisma.seed` config)
+- `docs/GIT_WORKFLOW.md` (new)
+- `docs/{PROJECT_STATE,CURRENT_PHASE,CHANGELOG,TEST_STATUS,TODO,DECISIONS,DB_SCHEMA,API_STATUS,UI_STATUS,HANDOFF}.md`
+  (updated), `CLAUDE.md` (updated)
 
 ## Do NOT redo
 
-- Do not re-debate Next.js-API-routes-vs-separate-backend, Prisma-vs-other
-  ORM, or NextAuth-vs-custom-auth — these are settled in
-  `docs/DECISIONS.md`. Revisit only if a documented reason emerges.
-- Do not re-scaffold the Next.js project or re-run the architecture
-  presentation/approval step — it's done.
+- Do not re-debate the settled Phase 0 decisions (see prior entries in
+  `docs/DECISIONS.md`).
+- Do not rebuild the auth models/services/routes/UI listed above — they
+  exist and are self-consistent. The only remaining work is **verification
+  against a real database**, not re-implementation.
+- Do not switch away from the super-admin bypass without updating
+  `docs/DECISIONS.md` first — it's a deliberate, documented simplification.
 
 ## Next session should start here
 
-- Confirm `npm run build` and `npx prisma generate` succeed outside this
-  sandbox (normal internet access). Mark Phase 0 DONE.
-- Start Phase 1: design `users`/`roles`/`permissions`/`sessions` Prisma
-  models, migration, password hashing service, login API route, login UI
-  screen, session middleware. See `docs/CURRENT_PHASE.md`.
+1. `git checkout -b module/auth` (or `git checkout module/auth` if it
+   already exists) per `docs/GIT_WORKFLOW.md` — **this session's Phase 1
+   work was committed directly; going forward, module work belongs on its
+   own branch.**
+2. Run the "Exact next task" verification steps above.
+3. Once verified, mark Phase 1 DONE and begin Phase 2 (Company/Branch/
+   Warehouse) — see `docs/CURRENT_PHASE.md` for scope, and open a new
+   `module/companies-branches` branch for it.

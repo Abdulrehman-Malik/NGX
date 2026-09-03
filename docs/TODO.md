@@ -14,16 +14,29 @@ Prioritized backlog. Update whenever work is added or completed.
 
 ## Phase 1 — Authentication & Security
 
-- [ ] `User`, `Role`, `Permission`, `RolePermission`, `UserRole`, `Session`
-      Prisma models + migration.
-- [ ] Password hashing service (bcrypt).
-- [ ] Login/logout services + API routes.
-- [ ] Session middleware resolving user/role/permissions per request.
-- [ ] Login UI screen + first design-system primitives (button, input,
-      form, error state).
-- [ ] `requirePermission()` helper for API routes.
-- [ ] Seed at least one admin user for local testing.
-- [ ] Unit tests: hashing, login success/failure, session validation.
+Code written; **nothing has been run against a real database yet**. In
+priority order:
+
+- [ ] Run `npx prisma generate` + `npx prisma migrate dev --name init_auth`
+      on a machine with real internet/DB access.
+- [ ] Re-run `npx tsc --noEmit` after that succeeds (current pass is
+      against an ungenerated client stub — see `docs/TEST_STATUS.md`).
+- [ ] Run `npm run db:seed`, confirm the admin user is created.
+- [ ] Manually test login → home (shows signed-in state) → logout in a
+      browser.
+- [ ] Add integration tests for `auth-service.ts` (login/logout/
+      resolveSession) once a DB is available.
+- [ ] Triage `npm audit` findings (see Immediate section above — carried
+      over, still not done).
+- [ ] Mark Phase 1 DONE in `docs/PROJECT_STATE.md` and
+      `docs/CURRENT_PHASE.md` once the above is verified.
+
+Already done this phase: Prisma models (User/Role/Permission/
+RolePermission/UserRole/Session), password hashing, session tokens,
+lockout policy, permission checks, login/logout/me API routes, session
+cookie helpers, login UI + design-system primitives (Button/Input/
+FormField), seed script, 15 passing unit tests. Full detail in
+`docs/CURRENT_PHASE.md`.
 
 ## Backlog (not yet scheduled — full detail in the master requirements PDF)
 

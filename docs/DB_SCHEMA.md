@@ -5,19 +5,39 @@ Current tables, relationships, indexes, and posting rules. Update whenever
 file — if they disagree, the schema file wins (see `docs/HANDOFF.md`
 priority-of-truth rule).
 
-## Current State (Phase 0)
+## Current State (Phase 1, in progress)
 
-No business tables exist yet. `prisma/schema.prisma` contains only the
-`datasource`/`generator` configuration, pointed at PostgreSQL via
-`DATABASE_URL`.
+Auth models are defined in `prisma/schema.prisma` (Prisma model names shown
+— actual table names follow Prisma's default mapping unless `@@map` is
+added later):
+
+- **`User`** — `username`, `email` (both unique), `passwordHash`,
+  `fullName`, `isActive`, `failedLoginAttempts`, `lockedUntil`,
+  `lastLoginAt`, standard audit columns, `deletedAt` (soft delete).
+  Company/branch scoping intentionally **not** added yet — Phase 2.
+- **`Role`** — `code` (unique), `name`, `description`, `isSuperAdmin`
+  (bypasses permission checks — see `docs/DECISIONS.md`).
+- **`Permission`** — `code` (unique, e.g. `sales.invoice.create`),
+  `module`, `action`, `description`. Empty catalog for now; filled in
+  module-by-module.
+- **`RolePermission`** — join table, `@@unique([roleId, permissionId])`.
+- **`UserRole`** — join table, `@@unique([userId, roleId])`.
+- **`Session`** — `tokenHash` (unique, SHA-256 of the opaque cookie token —
+  raw token is never stored), `expiresAt`, `revokedAt`, `ipAddress`,
+  `userAgent`.
+
+**⚠️ This schema has never been applied to a real database.** No
+`prisma migrate dev` has been run (no Postgres/Docker in the environment it
+was written in). Treat it as unverified until a migration has actually run
+successfully — see `docs/TEST_STATUS.md`.
+
+ID strategy: `cuid()` on every model (see `docs/DECISIONS.md`).
 
 ## Planned Table Groups (introduced phase-by-phase)
 
 These will be documented here in detail as each phase lands — this is a
 preview of scope from the master requirements, not a finalized schema.
 
-- **Phase 1 — Auth:** `users`, `roles`, `permissions`, `role_permissions`,
-  `user_roles`, `sessions`
 - **Phase 2 — Org:** `companies`, `branches`, `warehouses`, `user_branches`
 - **Phase 3 — Master data:** `items`, `item_barcodes`, `item_prices`,
   `categories`, `brands`, `units`, `customers`, `suppliers`,
@@ -36,8 +56,8 @@ preview of scope from the master requirements, not a finalized schema.
 
 ## Conventions (apply to every table from Phase 1 onward)
 
-- Primary keys: `id` (cuid or uuid, TBD in Phase 1 — record the choice here
-  once made).
+- Primary keys: `id` (`cuid()`, decided in Phase 1 — see
+  `docs/DECISIONS.md`).
 - Every transactional table: `companyId`, `branchId` (+ `warehouseId` where
   relevant).
 - Audit columns: `createdAt`, `createdBy`, `updatedAt`, `updatedBy`.

@@ -9,6 +9,8 @@ otherwise) picking up work on this repository.
 2. `docs/HANDOFF.md` — compact continuation prompt for a new session
 3. `docs/ARCHITECTURE.md` — stable architecture reference
 4. `docs/DECISIONS.md` — why key technical choices were made
+5. `docs/GIT_WORKFLOW.md` — **branch per module, required before writing
+   any code** — never commit new module work straight to `main`
 
 **Do not restart the project or redesign completed work.** If code/
 migrations and documentation disagree, code wins — fix the docs, don't

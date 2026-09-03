@@ -20,3 +20,118 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ---------------------------------------------------------------------
+// Phase 1 — Authentication & Security
+//
+// Company/branch scoping (userBranches, companyId/branchId on User) is
+// intentionally deferred to Phase 2 per docs/CURRENT_PHASE.md. Do not add
+// those fields here without updating this comment and docs/DECISIONS.md.
+// ---------------------------------------------------------------------
+
+model User {
+  id       String @id @default(cuid())
+  username String @unique
+  email    String @unique
+
+  passwordHash String
+  fullName     String
+  isActive     Boolean @default(true)
+
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+
+  userRoles UserRole[]
+  sessions  Session[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model Role {
+  id          String  @id @default(cuid())
+  code        String  @unique // e.g. "ADMIN", "CASHIER", "MANAGER"
+  name        String
+  description String?
+
+  // A system role with isSuperAdmin = true bypasses granular permission
+  // checks entirely (see src/modules/auth/permissions.ts). This exists so
+  // Phase 1 has a working administrator before the full permission catalog
+  // (spec §8) is built out module-by-module in later phases.
+  isSuperAdmin Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+}
+
+model Permission {
+  id   String @id @default(cuid())
+  code String @unique // e.g. "sales.invoice.create", "users.manage"
+
+  module      String // e.g. "sales", "users", "inventory"
+  action      String // e.g. "create", "view", "approve"
+  description String?
+
+  createdAt DateTime @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@index([module])
+}
+
+model RolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([roleId, permissionId])
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roleId])
+}
+
+// Server-side sessions. The cookie holds a random opaque token; only its
+// SHA-256 hash is stored here, so a stolen DB dump alone can't be replayed
+// as a session cookie.
+model Session {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String @unique
+
+  ipAddress String?
+  userAgent String?
+
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}

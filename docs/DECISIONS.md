@@ -72,6 +72,53 @@ seed scenario.
 
 ---
 
+### 2026-09-03 — ID strategy: `cuid()`
+
+**Decision:** All Prisma model primary keys use `@default(cuid())` rather
+than auto-increment integers or `uuid()`.
+
+**Why:** Collision-resistant without a central sequence (useful once
+multi-branch/offline scenarios exist), URL-safe, and shorter than a UUID.
+Auto-increment integers were ruled out because they leak record counts and
+are awkward once any kind of distributed/offline write path exists later.
+
+---
+
+### 2026-09-03 — Super-admin role bypasses granular permissions
+
+**Decision:** `Role.isSuperAdmin: Boolean` — a user with a super-admin role
+passes every `hasPermission()`/`requirePermission()` check automatically,
+without needing individual `RolePermission` rows.
+
+**Why:** The full permission catalog (spec §8) is built out module-by-module
+as each module lands, over many phases. Without a bypass, there would be no
+way to have a working administrator account until that entire catalog is
+finished. This is a deliberate, temporary-by-design simplification, not a
+long-term security model — it should be revisited once the permission
+catalog is substantially complete, to decide whether the bypass stays as a
+true "break-glass" role or is replaced by an explicit "grant all current
+permissions" approach.
+
+**Revisit when:** the permission catalog is largely built out (later
+phases) — reassess whether an unconditional bypass is still appropriate.
+
+---
+
+### 2026-09-03 — Git workflow: one branch per module
+
+**Decision:** Each module/phase of work is developed on its own branch
+(`module/<name>`, e.g. `module/auth`, `module/companies-branches`,
+`module/inventory`), merged to `main` only once that module's slice is
+implemented, documented, and verified per `docs/CURRENT_PHASE.md`'s
+"remaining before phase can be marked DONE" checklist.
+
+**Why:** Keeps `main` always in a coherent, working state; makes it easy to
+review one module's diff in isolation; and matches the Playbook's
+phase-by-phase discipline at the git level, not just the docs level. Full
+workflow detail in `docs/GIT_WORKFLOW.md`.
+
+---
+
 ### 2026-09-03 — Legacy repo content archived, not deleted
 
 **Decision:** The pre-existing standalone `login.html` and stray

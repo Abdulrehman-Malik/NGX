@@ -3,17 +3,34 @@
 Build/test/migration status and known failures. Update every implementation
 session.
 
-## Last checked: 2026-09-03
+## Last checked: 2026-09-03 (Phase 1 — auth foundation)
 
 | Check | Result | Notes |
 |---|---|---|
 | `npm install` | PASS | 440 packages installed. 10 audit findings (3 moderate, 6 high, 1 critical) reported by npm — **not yet triaged**, see Known Issues below. |
-| `npx tsc --noEmit` | PASS | |
+| `npx vitest run` | PASS | 15/15 tests (password hashing, lockout policy, permission checks, smoke) |
+| `npx tsc --noEmit` | PASS* | *Caveat below — weaker than normal until Prisma client is generated |
 | `npx next lint` | PASS | No warnings or errors |
-| `npx vitest run` | PASS | 1/1 test (smoke test only so far) |
-| `npx prisma generate` | **FAIL (environment-specific)** | Fails fetching `schema-engine`/`libquery_engine` binaries from `binaries.prisma.sh` — this sandbox's network allowlist doesn't include that domain. Not expected to fail on a normal machine with full internet access. **Must be re-verified outside this sandbox before Phase 0 is marked fully done.** |
-| `npx next build` | **FAIL (downstream of above)** | Build compiles and type-checks successfully; fails only at "Collecting page data" for `/api/health` because `@prisma/client` never finished generating. Same root cause as above — not a code defect. |
-| DB migrations | NOT RUN | No Prisma models exist yet (Phase 0 has no business schema by design). No local Postgres instance available in this sandbox (no Docker) to test `docker-compose.yml` itself. |
+| `npx prisma generate` | **FAIL (environment-specific)** | Fails fetching `schema-engine`/`libquery_engine` binaries from `binaries.prisma.sh` — this sandbox's network allowlist doesn't include that domain. Not expected to fail on a normal machine with full internet access. **Must be re-verified outside this sandbox.** |
+| `npx next build` | **FAIL (downstream of above)** | Same root cause — `@prisma/client` never finished generating, so any page importing `prisma` fails at "Collecting page data". Not a code defect. |
+| DB migrations | NOT RUN | No local Postgres/Docker available in this sandbox; no `prisma migrate dev` has been run against a real database yet. **The auth schema in `prisma/schema.prisma` has never actually been applied to or verified against a real Postgres instance.** |
+
+### ⚠️ Important caveat: Prisma types are unverified
+
+Because `prisma generate` has never succeeded in this environment,
+`@prisma/client` has no generated model types — `tsc --noEmit` is passing
+against a loosely-typed (effectively `any`-ish) `PrismaClient` stub, not the
+real generated types for `User`, `Session`, `Role`, etc. This means:
+
+- Field name typos, wrong relation names, or incorrect `include`/`select`
+  shapes in `src/modules/auth/auth-service.ts` or elsewhere **would not
+  currently be caught by typecheck**.
+- The next session (ideally with real internet access) **must** run
+  `npx prisma generate` and then `npx tsc --noEmit` again, and treat the
+  *second* typecheck as the real verification — not this one.
+- Do not treat "PASS" above as proof the Prisma queries are correct; treat
+  it as proof the surrounding TypeScript (non-Prisma-dependent code) is
+  syntactically sound.
 
 ## Known Issues
 

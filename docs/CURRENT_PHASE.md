@@ -30,7 +30,7 @@ documentation — no business features yet.
 
 ---
 
-## Phase 1 — Authentication & Security (next phase, not started)
+## Phase 1 — Authentication & Security (in progress)
 
 **Goal (per `docs/Enterprise_Multi-Company_Multi-Branch_POS_and_ERP_Architecture.pdf`
 §6–§8 and the Playbook's phase plan):** Login, sessions, password security,
@@ -38,26 +38,51 @@ users, roles, permissions foundation.
 
 ### Planned work
 
-1. Prisma models: `User`, `Role`, `Permission`, `RolePermission`,
-   `UserRole`, `Session`. Record ID strategy (cuid vs uuid) in
-   `docs/DECISIONS.md` when chosen.
-2. Migration + `prisma db seed` with at least one admin user (bcrypt-hashed
-   password) for local testing.
-3. `src/modules/auth`: password hashing service, session creation/
-   validation service, login/logout logic — framework-agnostic, callable
-   from API routes.
-4. `POST /api/auth/login`, `POST /api/auth/logout` route handlers (Zod
-   validation, rate limiting consideration noted even if not implemented
-   yet).
-5. Session middleware: resolves the authenticated user + role +
-   permissions from the session cookie on every request.
-6. Login UI screen (first real screen in the design system — establish
-   button/input/form primitives here since everything else builds on them).
-7. Basic RBAC check helper used by API routes (`requirePermission(...)`),
-   even before companies/branches exist (Phase 2) — permission checks
-   should not need branch scope to function structurally.
-8. Tests: password hashing, login success/failure, session validation,
-   unauthorized access rejected.
+1. [x] Prisma models: `User`, `Role`, `Permission`, `RolePermission`,
+   `UserRole`, `Session`. ID strategy: `cuid()` (see `docs/DECISIONS.md`).
+2. [x] `prisma/seed.ts` with one super-admin role + admin user
+   (bcrypt-hashed password) for local testing.
+   **Not yet run against a real database** — needs Phase 0's remaining
+   verification step first (see `docs/TEST_STATUS.md`).
+3. [x] `src/modules/auth`: password hashing (`password.ts`), session
+   tokens (`session-token.ts`), lockout policy (`lockout-policy.ts`),
+   permission checks (`permissions.ts`), Zod schemas (`schemas.ts`), and
+   `auth-service.ts` (login/logout/resolveSession) — framework-agnostic,
+   callable from API routes.
+4. [x] `POST /api/auth/login`, `POST /api/auth/logout`,
+   `GET /api/auth/me` route handlers with Zod validation. Rate limiting
+   is **not** implemented yet — noted as a gap, not silently skipped.
+5. [x] Session resolution: `src/lib/current-user.ts` +
+   `src/lib/session-cookie.ts` resolve the authenticated user + effective
+   permissions from the session cookie, callable from server components
+   and route handlers.
+6. [x] Login UI screen (`src/app/login/page.tsx`) + first design-system
+   primitives: `Button`, `Input`, `Label`/`FormField`
+   (`src/components/ui/`). Home page (`src/app/page.tsx`) now shows signed
+   in/out state and a logout button as an end-to-end smoke check.
+7. [x] `requirePermission()`/`hasPermission()` helper
+   (`src/modules/auth/permissions.ts`), with a super-admin bypass
+   (`Role.isSuperAdmin`) so there's a usable administrator before the full
+   permission catalog exists.
+8. [x] Unit tests: password hashing (3), lockout policy (6), permission
+   checks (5) — all pure-function tests, no DB required, all passing.
+   **Not yet tested:** `auth-service.ts` itself (login/logout/
+   resolveSession) end-to-end, since that requires a live database — this
+   is the main remaining risk area for this phase.
+
+### Remaining before Phase 1 can be marked DONE
+
+- Run `npx prisma generate` + `npx prisma migrate dev --name init_auth` on
+  a machine with real internet/DB access, confirm the migration applies
+  cleanly.
+- Run `npm run db:seed` and confirm the admin user is created.
+- Manually verify the login → home → logout flow works in the browser
+  against a real Postgres instance.
+- Re-run `npx tsc --noEmit` **after** `prisma generate` succeeds — the
+  current typecheck pass is against an ungenerated Prisma client stub and
+  is not a reliable signal (see `docs/TEST_STATUS.md` caveat).
+- Add integration tests for `auth-service.ts` (likely against a test DB or
+  with Prisma mocked) once a DB is available to test against.
 
 ### Explicitly deferred to later phases
 
