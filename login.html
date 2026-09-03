@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #1f2937, #111827);
+  }
+  .card {
+    background: #ffffff;
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    width: 100%;
+    max-width: 360px;
+  }
+  .card h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+    color: #111827;
+  }
+  .field {
+    margin-bottom: 1.1rem;
+  }
+  .field label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    color: #374151;
+    font-weight: 600;
+  }
+  .field input {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .field input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  .options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 1.4rem;
+  }
+  .options a {
+    color: #2563eb;
+    text-decoration: none;
+  }
+  .options a:hover { text-decoration: underline; }
+  button.submit {
+    width: 100%;
+    padding: 0.7rem;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  button.submit:hover { background: #1d4ed8; }
+  .error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    text-align: center;
+    min-height: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  .signup {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #4b5563;
+  }
+  .signup a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Sign in</h1>
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="username">Username or email</label>
+        <input type="text" id="username" name="username" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+      <div class="options">
+        <label style="display:flex;align-items:center;gap:0.4rem;font-weight:400;color:#4b5563;">
+          <input type="checkbox" id="remember" style="width:auto;">
+          Remember me
+        </label>
+        <a href="#">Forgot password?</a>
+      </div>
+      <div class="error" id="errorMsg"></div>
+      <button type="submit" class="submit">Log in</button>
+    </form>
+    <div class="signup">
+      Don't have an account? <a href="#">Sign up</a>
+    </div>
+  </div>
+
+  <script>
+    // Placeholder client-side handling only.
+    // Replace this with a real call to your authentication backend/API.
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMsg');
+
+      if (!username || !password) {
+        errorMsg.textContent = 'Please fill in both fields.';
+        return;
+      }
+
+      errorMsg.textContent = '';
+      // TODO: send credentials to your backend, e.g.:
+      // fetch('/api/login', { method: 'POST', headers: {...}, body: JSON.stringify({ username, password }) })
+      alert('Login submitted (demo only — hook this up to your backend).');
+    });
+  </script>
+</body>
+</html>
