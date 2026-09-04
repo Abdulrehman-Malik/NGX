@@ -119,6 +119,42 @@ workflow detail in `docs/GIT_WORKFLOW.md`.
 
 ---
 
+### 2026-09-03 — Maintain a manual SQL Server DDL mirror alongside Prisma/Postgres
+
+**Decision:** Added `db-scripts/sqlserver/` containing hand-written T-SQL
+DDL that mirrors `prisma/schema.prisma`, plus `db-scripts/sqlserver/
+CONNECTION.md` for connecting to/running scripts against SQL Server.
+Prisma/Postgres remains the only schema the running application actually
+uses.
+
+**Why:** The original architecture requirements call for the schema to
+stay portable beyond Postgres-only features. Prisma doesn't support
+generating schemas for multiple providers from one source, so this is a
+manually maintained parity mirror rather than an automated one.
+
+**Maintenance obligation:** every `prisma/schema.prisma` change must be
+reflected in a corresponding `db-scripts/sqlserver/NNN_*.sql` file in the
+same commit — see `db-scripts/README.md`. This is a real ongoing cost;
+revisit whether it's worth continuing if it starts drifting or if SQL
+Server portability turns out not to matter in practice.
+
+---
+
+### 2026-09-03 — Added HOW_TO_RUN.txt for non-technical users
+
+**Decision:** Added a plain-language, plain-text (`.txt`, not markdown)
+step-by-step guide at the repo root covering installing prerequisites,
+first-time setup, everyday use, and troubleshooting — aimed at someone
+with no prior software development experience.
+
+**Why:** Requested explicitly, and useful independent of that — the
+existing `README.md`/`CLAUDE.md` quick-start assumes developer familiarity
+with terminals, package managers, etc. Keep this file honest and
+low-jargon; if setup steps change (new required env vars, new services),
+update this file in the same change, not as an afterthought.
+
+---
+
 ### 2026-09-03 — Legacy repo content archived, not deleted
 
 **Decision:** The pre-existing standalone `login.html` and stray

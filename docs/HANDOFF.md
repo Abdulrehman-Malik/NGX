@@ -16,6 +16,13 @@ real database**)
 first — if `module/auth` already exists, check it out and continue there;
 otherwise create it before doing any further Phase 1 work.
 
+## Ongoing obligation: keep db-scripts/sqlserver in sync
+
+Any change to `prisma/schema.prisma` must be mirrored in
+`db-scripts/sqlserver/NNN_*.sql` in the same commit — see
+`db-scripts/README.md`. Phase 2 will need a new `002_*.sql` (the seed
+reference script currently occupies that number — renumber it).
+
 ## Exact continuation point
 
 All Phase 1 code is written and internally consistent (typecheck, lint,

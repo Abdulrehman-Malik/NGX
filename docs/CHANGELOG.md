@@ -3,6 +3,30 @@
 Chronological implementation record. Append entries; do not rewrite
 history.
 
+## 2026-09-03 — Infra: SQL Server portability scripts + non-developer onboarding guide
+
+- Added `db-scripts/sqlserver/001_init_auth.sql`: hand-written T-SQL DDL
+  mirroring the Phase 1 Prisma auth models (`User`, `Role`, `Permission`,
+  `RolePermission`, `UserRole`, `Session`).
+- Added `db-scripts/sqlserver/002_seed_admin_reference.sql`: a seed
+  reference script mirroring `prisma/seed.ts` (requires manually supplying
+  a real bcrypt hash — cannot be generated in plain T-SQL).
+- Added `db-scripts/sqlserver/CONNECTION.md`: how to run SQL Server
+  locally via Docker, and how to execute the scripts against it.
+- Added `db-scripts/README.md`: explains this directory is a manually
+  maintained portability mirror (Prisma/Postgres remains the only schema
+  the live app uses), and the obligation to keep it in sync with
+  `prisma/schema.prisma` going forward.
+- Added `docs/DB_CONNECTIONS.md`: overview tying together Postgres
+  (primary) and SQL Server (portability mirror) connectivity.
+- Added `HOW_TO_RUN.txt` at the repo root: plain-language, step-by-step
+  guide for running the app locally, written for someone with no prior
+  development experience (install prerequisites, first-time setup,
+  everyday use, troubleshooting).
+- Updated `CLAUDE.md` and `README.md` to reference both additions.
+- None of this changes what the running application actually connects
+  to — still PostgreSQL via Prisma, per `docs/DECISIONS.md`.
+
 ## 2026-09-03 — Phase 1: Authentication foundation (code complete, unverified against a live DB)
 
 - Added Prisma auth models: `User`, `Role`, `Permission`,

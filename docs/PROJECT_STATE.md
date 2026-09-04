@@ -1,33 +1,34 @@
 # PROJECT STATE
 
-Last updated: 2026-09-03 11:15
-Current phase: Phase 1 — Authentication & Security
-Overall status: IN PROGRESS (code complete, unverified against a real DB)
+Last updated: 2026-09-03 12:30
+Current phase: Phase 1 — Authentication & Security (auth code) /
+cross-cutting infra (db-scripts + onboarding docs)
+Overall status: Phase 1 auth IN PROGRESS (unverified against a real DB);
+db-scripts + onboarding docs DONE
 
 ## Completed
 
-**Phase 0** (fully done — see `docs/CHANGELOG.md` for detail): docs/
-handoff system, Next.js + TypeScript + Tailwind scaffold, Prisma datasource,
-Docker Compose, toolchain verified except `prisma generate`/`next build`
-(blocked only by this build sandbox's network allowlist).
+**Phase 0** (fully done — see `docs/CHANGELOG.md`): docs/ handoff system,
+Next.js + TypeScript + Tailwind scaffold, Prisma datasource, Docker
+Compose, toolchain verified except `prisma generate`/`next build`.
 
-**Phase 1 (this session):**
-- Prisma auth models: `User`, `Role`, `Permission`, `RolePermission`,
-  `UserRole`, `Session`. ID strategy: `cuid()`.
-- `src/modules/auth/`: `password.ts`, `session-token.ts`,
-  `lockout-policy.ts`, `permissions.ts`, `schemas.ts`, `auth-service.ts`
-  (login/logout/resolveSession).
-- API routes: `POST /api/auth/login`, `POST /api/auth/logout`,
-  `GET /api/auth/me`.
-- `src/lib/session-cookie.ts`, `src/lib/current-user.ts` — session
-  resolution for server components/route handlers.
-- Login UI (`src/app/login/page.tsx`) + design-system primitives
-  (`Button`, `Input`, `Label`/`FormField`).
-- Home page updated to show signed-in state + logout button.
-- `prisma/seed.ts` — creates one super-admin role + admin user.
-- 15 passing unit tests (password hashing, lockout policy, permission
-  checks) — all pure-function tests, no DB required.
-- Added `docs/GIT_WORKFLOW.md` — one branch per module, going forward.
+**Phase 1 auth (code complete, unverified against a real DB):** Prisma
+auth models, `src/modules/auth/` (password, session tokens, lockout
+policy, permissions, schemas, AuthService), login/logout/me API routes,
+session cookie + current-user helpers, login UI + design-system
+primitives, seed script, 15 passing unit tests.
+
+**Cross-cutting infra (this session, done):**
+- `db-scripts/sqlserver/` — manually maintained T-SQL mirror of the
+  Phase 1 Prisma schema (`001_init_auth.sql`), a seed reference script
+  (`002_seed_admin_reference.sql`), and connection instructions
+  (`CONNECTION.md`). `db-scripts/README.md` documents the maintenance
+  obligation (update in lockstep with `prisma/schema.prisma`).
+- `docs/DB_CONNECTIONS.md` — overview tying together Postgres (primary)
+  and SQL Server (portability mirror) connectivity.
+- `HOW_TO_RUN.txt` — plain-language, non-developer step-by-step guide to
+  running the app locally, at the repo root.
+- `CLAUDE.md` and `README.md` updated to point to both.
 
 ## Currently working on
 
@@ -87,18 +88,13 @@ the new one-branch-per-module git workflow (`docs/GIT_WORKFLOW.md`).
 
 ## Files changed in last session
 
-- `prisma/schema.prisma` (auth models added), `prisma/seed.ts`
-- `src/modules/auth/{password,session-token,lockout-policy,permissions,schemas,auth-service}.ts`
-- `src/lib/{session-cookie,current-user}.ts`
-- `src/app/api/auth/{login,logout,me}/route.ts`
-- `src/app/login/page.tsx`, `src/app/page.tsx` (rewritten),
-  `src/components/logout-button.tsx`
-- `src/components/ui/{button,input,form-field}.tsx`
-- `tests/unit/{password,lockout-policy,permissions}.test.ts`
-- `package.json` (added `prisma.seed` config)
-- `docs/GIT_WORKFLOW.md` (new)
-- `docs/{PROJECT_STATE,CURRENT_PHASE,CHANGELOG,TEST_STATUS,TODO,DECISIONS,DB_SCHEMA,API_STATUS,UI_STATUS,HANDOFF}.md`
-  (updated), `CLAUDE.md` (updated)
+- `db-scripts/README.md`, `db-scripts/sqlserver/{001_init_auth,002_seed_admin_reference}.sql`,
+  `db-scripts/sqlserver/CONNECTION.md` (all new)
+- `docs/DB_CONNECTIONS.md` (new)
+- `HOW_TO_RUN.txt` (new, repo root)
+- `CLAUDE.md`, `README.md` (updated to reference the above)
+- `docs/DECISIONS.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`,
+  `docs/TODO.md`, `docs/HANDOFF.md` (updated)
 
 ## Do NOT redo
 
@@ -109,14 +105,23 @@ the new one-branch-per-module git workflow (`docs/GIT_WORKFLOW.md`).
   against a real database**, not re-implementation.
 - Do not switch away from the super-admin bypass without updating
   `docs/DECISIONS.md` first — it's a deliberate, documented simplification.
+- Do not recreate `db-scripts/sqlserver/001_init_auth.sql` or
+  `HOW_TO_RUN.txt` — they exist. Do update the SQL Server script whenever
+  `prisma/schema.prisma` changes (see `db-scripts/README.md`), and update
+  `HOW_TO_RUN.txt` if setup steps change.
 
 ## Next session should start here
 
 1. `git checkout -b module/auth` (or `git checkout module/auth` if it
-   already exists) per `docs/GIT_WORKFLOW.md` — **this session's Phase 1
-   work was committed directly; going forward, module work belongs on its
-   own branch.**
-2. Run the "Exact next task" verification steps above.
+   already exists) per `docs/GIT_WORKFLOW.md` for any further Phase 1 auth
+   work — this session's auth work was committed directly to `main` before
+   the branch policy was written; the `db-scripts`/onboarding work in this
+   session used its own short-lived branch
+   (`infra/db-scripts-and-onboarding`) per the "cross-cutting → branch
+   anyway" guidance.
+2. Run the Phase 1 "Exact next task" verification steps (see above).
 3. Once verified, mark Phase 1 DONE and begin Phase 2 (Company/Branch/
-   Warehouse) — see `docs/CURRENT_PHASE.md` for scope, and open a new
-   `module/companies-branches` branch for it.
+   Warehouse) — see `docs/CURRENT_PHASE.md`, and remember to add a
+   `db-scripts/sqlserver/002_...sql` companion script (renumber the
+   existing seed reference script if needed) when Phase 2's Prisma models
+   land, per `db-scripts/README.md`.

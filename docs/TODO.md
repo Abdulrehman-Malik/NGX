@@ -2,6 +2,14 @@
 
 Prioritized backlog. Update whenever work is added or completed.
 
+## Ongoing obligation (every phase, not a one-time task)
+
+- [ ] Whenever `prisma/schema.prisma` changes, add/update the matching
+      `db-scripts/sqlserver/NNN_*.sql` file in the same commit (see
+      `db-scripts/README.md`). Currently in sync as of Phase 1 (auth).
+- [ ] If local setup steps ever change (new required env var, new
+      service, new command), update `HOW_TO_RUN.txt` in the same change.
+
 ## Immediate (closes Phase 0)
 
 - [ ] Re-verify `npx prisma generate` and `npm run build` on a machine with

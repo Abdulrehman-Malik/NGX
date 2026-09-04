@@ -8,6 +8,10 @@ pharmacy, electronics, and more).
 See [`CLAUDE.md`](./CLAUDE.md) for the full project context, architecture,
 and current development status.
 
+**New to this project or not a developer?** See
+[`HOW_TO_RUN.txt`](./HOW_TO_RUN.txt) for a plain step-by-step guide to
+running this on your own computer.
+
 ## Quick start
 
 ```bash

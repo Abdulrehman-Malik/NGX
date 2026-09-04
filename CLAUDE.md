@@ -11,6 +11,10 @@ otherwise) picking up work on this repository.
 4. `docs/DECISIONS.md` — why key technical choices were made
 5. `docs/GIT_WORKFLOW.md` — **branch per module, required before writing
    any code** — never commit new module work straight to `main`
+6. `docs/DB_CONNECTIONS.md` — database connectivity overview (Postgres
+   primary + SQL Server portability mirror in `db-scripts/`)
+7. `HOW_TO_RUN.txt` — plain-language, non-developer step-by-step guide to
+   running the app locally (point non-technical people here)
 
 **Do not restart the project or redesign completed work.** If code/
 migrations and documentation disagree, code wins — fix the docs, don't

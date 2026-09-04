@@ -1,0 +1,220 @@
+========================================================================
+ NGX POS & ERP -- HOW TO RUN THIS ON YOUR COMPUTER
+========================================================================
+
+This guide assumes you have never set up a software project before.
+Follow the steps IN ORDER. Don't skip steps. Each step is one or two
+commands you type into a "terminal" window and press Enter after.
+
+Total time the first time: about 15-20 minutes, mostly waiting for
+downloads.
+
+
+------------------------------------------------------------------------
+PART 1 -- ONE-TIME SETUP (only needed the very first time)
+------------------------------------------------------------------------
+
+You need to install three free programs first:
+
+1. GIT (downloads the project files)
+   Windows: https://git-scm.com/download/win
+   Mac:     open the "Terminal" app and type: git --version
+            (macOS will offer to install it for you automatically)
+   Linux:   sudo apt install git   (or your distro's package manager)
+
+2. NODE.JS (runs the application) -- get version 20 or newer
+   Download from: https://nodejs.org
+   Choose the button that says "LTS" (this means "stable version").
+
+3. DOCKER DESKTOP (runs the database)
+   Download from: https://www.docker.com/products/docker-desktop/
+   After installing, OPEN Docker Desktop once and leave it running in
+   the background. You'll see a whale icon in your system tray/menu bar
+   when it's ready.
+
+If your computer asks you to restart after installing any of these,
+do so before continuing.
+
+
+------------------------------------------------------------------------
+PART 2 -- CHECK EVERYTHING INSTALLED CORRECTLY
+------------------------------------------------------------------------
+
+Open a terminal:
+  Windows -> search for "Command Prompt" or "PowerShell" in the Start menu
+  Mac     -> search for "Terminal" using Spotlight (Cmd+Space)
+  Linux   -> your usual terminal app
+
+Type each line below and press Enter. You should see a version number
+printed after each one:
+
+    git --version
+    node --version
+    docker --version
+
+If any of these says something like "command not found" or "not
+recognized", that program did not install correctly -- go back and
+reinstall it before continuing.
+
+
+------------------------------------------------------------------------
+PART 3 -- GET THE PROJECT RUNNING (do this every time you set it up on
+a new computer; after that, see PART 5 for everyday use)
+------------------------------------------------------------------------
+
+Type each command below into your terminal, one at a time, pressing
+Enter and waiting for it to finish before typing the next one.
+
+STEP 1 -- Download the project
+--------------------------------
+    git clone https://github.com/Abdulrehman-Malik/NGX.git
+    cd NGX
+
+STEP 2 -- Create your settings file
+--------------------------------------
+Windows (Command Prompt):
+    copy .env.example .env
+
+Mac / Linux:
+    cp .env.example .env
+
+You don't need to open or edit this file for local use -- it already has
+working defaults.
+
+STEP 3 -- Start the database
+--------------------------------
+Make sure Docker Desktop is open and running (check for the whale icon),
+then type:
+
+    docker compose up -d
+
+Wait about 10 seconds after this finishes.
+
+STEP 4 -- Install the project's building blocks
+----------------------------------------------------
+    npm install
+
+This downloads everything the project needs to work. It can take a few
+minutes and will print a lot of text -- that's normal.
+
+STEP 5 -- Set up the database structure
+--------------------------------------------
+Type these two commands one at a time:
+
+    npx prisma generate
+    npx prisma migrate dev --name init_auth
+
+If it asks you a yes/no question, it's safe to press Enter to accept the
+default answer.
+
+STEP 6 -- Create a test login
+----------------------------------
+    npm run db:seed
+
+This creates a test administrator account so you have something to log
+in with. The terminal will print the username, email, and password --
+write these down. By default they are:
+
+    Username: admin
+    Password: ChangeMe123!
+
+(If you don't see these exact values printed, use whatever the terminal
+actually shows you.)
+
+STEP 7 -- Start the application
+------------------------------------
+    npm run dev
+
+IMPORTANT: leave this terminal window open. Closing it stops the app.
+You'll see a message saying it's ready, usually mentioning
+"http://localhost:3000".
+
+STEP 8 -- Open it in your browser
+--------------------------------------
+Open your web browser (Chrome, Edge, Firefox, Safari -- any of them) and
+go to this address:
+
+    http://localhost:3000
+
+Click "Sign in" and enter the username and password from Step 6.
+
+You're in! That's the whole application running on your own computer.
+
+
+------------------------------------------------------------------------
+PART 4 -- STOPPING EVERYTHING
+------------------------------------------------------------------------
+
+To stop the application:
+  Go back to the terminal window running "npm run dev" and press
+  Ctrl+C (Windows/Linux) or Cmd+C (Mac). Wait a moment for it to close.
+
+To stop the database:
+    docker compose down
+
+It's fine to leave the database running if you're coming back later
+today -- you only need to stop it if you want to free up your computer's
+resources.
+
+
+------------------------------------------------------------------------
+PART 5 -- EVERYDAY USE (after the first-time setup above is done)
+------------------------------------------------------------------------
+
+You do NOT need to repeat every step above each time. Just do this:
+
+    cd NGX
+    docker compose up -d
+    npm run dev
+
+Then open http://localhost:3000 in your browser again.
+
+
+------------------------------------------------------------------------
+PART 6 -- IF SOMETHING GOES WRONG
+------------------------------------------------------------------------
+
+"Port 3000 is already in use"
+    Something else on your computer is using that address. Close other
+    terminal windows that might be running the app already, or restart
+    your computer, then try "npm run dev" again.
+
+"Cannot connect to Docker daemon" / "Docker is not running"
+    Docker Desktop isn't open. Open the Docker Desktop application and
+    wait until it shows "Docker is running" (the whale icon stops
+    animating), then try your command again.
+
+"Prisma cannot connect to the database" / connection errors during
+Step 5
+    Make sure you ran "docker compose up -d" in Step 3 and waited about
+    10 seconds before running the Prisma commands. Try running
+    "docker compose up -d" again to make sure the database is actually
+    started.
+
+"npm: command not found" or "node: command not found"
+    Node.js did not install correctly, or you need to close and reopen
+    your terminal window after installing it. Reinstall from
+    https://nodejs.org if the problem continues.
+
+Forgot the admin password
+    Re-run "npm run db:seed" -- it's safe to run again and will remind
+    you of the login details (it won't create duplicate accounts).
+
+Still stuck?
+    Check these files in the project folder for more detail:
+      docs/PROJECT_STATE.md   -- what's built so far, known issues
+      docs/TEST_STATUS.md     -- known technical problems and workarounds
+    Or ask whoever set up this project for help.
+
+
+------------------------------------------------------------------------
+WHERE TO LEARN MORE (for developers, not required for basic use)
+------------------------------------------------------------------------
+
+    CLAUDE.md              -- full project overview
+    README.md              -- quick-start summary
+    docs/PROJECT_STATE.md  -- what's built so far and what's next
+    docs/ARCHITECTURE.md   -- how the system is designed
+    docs/GIT_WORKFLOW.md   -- how code changes are organized
+
+========================================================================
