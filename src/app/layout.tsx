@@ -1,19 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "NGX — POS & ERP",
-  description: "Enterprise multi-company, multi-branch POS & ERP system",
-};
+export const metadata: Metadata = { title: "Simple App", description: "Next.js + Supabase" };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body className="min-h-screen antialiased">{children}</body>
-    </html>
-  );
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body>{children}</body></html>;
 }
