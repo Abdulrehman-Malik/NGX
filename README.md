@@ -10,3 +10,7 @@ Login and Home only.
 
 ## Deploy
 Connect this GitHub repository to Cloudflare Pages/Workers when ready.
+
+
+## Deployment
+Cloudflare deployment is connected through the repository integration.
